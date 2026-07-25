@@ -8,6 +8,8 @@ DOCKER_WORKDIR=/proj
 DOCKER_RUN=docker run --rm -e LD_FLAGS="$$LD_FLAGS" -v "$$PWD/.:${DOCKER_WORKDIR}" -v "`go env GOPATH`/pkg/mod/.:/go/pkg/mod:ro" -w ${DOCKER_WORKDIR}
 DOCKER_GO_BUILD=go build -mod=readonly -a -installsuffix cgo -ldflags "$$LD_FLAGS"
 DOCKER_TEST_LEVEL ?= 0 # Optionally run a test during docker build
+DOCKER_REPO ?= ghcr.io/gotify
+DOCKER_HUB_REPO ?= gotify
 
 test: test-coverage test-js
 check: check-go check-swagger check-js
@@ -69,38 +71,38 @@ build-docker-multiarch: require-version
 		--label org.opencontainers.image.revision=$(shell git rev-parse HEAD) \
 		--label org.opencontainers.image.version=$(VERSION) \
 		--label org.opencontainers.image.created=$(shell date -u +%Y-%m-%dT%H:%M:%SZ) \
-		-t gotify/server:latest \
-		-t gotify/server:${VERSION} \
-		-t gotify/server:$(shell echo $(VERSION) | cut -d '.' -f -2) \
-		-t gotify/server:$(shell echo $(VERSION) | cut -d '.' -f -1) \
-	    -t ghcr.io/gotify/server:latest \
-		-t ghcr.io/gotify/server:${VERSION} \
-		-t ghcr.io/gotify/server:$(shell echo $(VERSION) | cut -d '.' -f -2) \
-		-t ghcr.io/gotify/server:$(shell echo $(VERSION) | cut -d '.' -f -1) \
-		-t gotify/server-arm64:latest \
-		-t gotify/server-arm64:${VERSION} \
-		-t gotify/server-arm64:$(shell echo $(VERSION) | cut -d '.' -f -2) \
-		-t gotify/server-arm64:$(shell echo $(VERSION) | cut -d '.' -f -1) \
-		-t ghcr.io/gotify/server-arm64:latest \
-		-t ghcr.io/gotify/server-arm64:${VERSION} \
-		-t ghcr.io/gotify/server-arm64:$(shell echo $(VERSION) | cut -d '.' -f -2) \
-		-t ghcr.io/gotify/server-arm64:$(shell echo $(VERSION) | cut -d '.' -f -1) \
-		-t gotify/server-arm7:latest \
-		-t gotify/server-arm7:${VERSION} \
-		-t gotify/server-arm7:$(shell echo $(VERSION) | cut -d '.' -f -2) \
-		-t gotify/server-arm7:$(shell echo $(VERSION) | cut -d '.' -f -1) \
-		-t ghcr.io/gotify/server-arm7:latest \
-		-t ghcr.io/gotify/server-arm7:${VERSION} \
-		-t ghcr.io/gotify/server-arm7:$(shell echo $(VERSION) | cut -d '.' -f -2) \
-		-t ghcr.io/gotify/server-arm7:$(shell echo $(VERSION) | cut -d '.' -f -1) \
-		-t gotify/server-riscv64:latest \
-		-t gotify/server-riscv64:${VERSION} \
-		-t gotify/server-riscv64:$(shell echo $(VERSION) | cut -d '.' -f -2) \
-		-t gotify/server-riscv64:$(shell echo $(VERSION) | cut -d '.' -f -1) \
-		-t ghcr.io/gotify/server-riscv64:latest \
-		-t ghcr.io/gotify/server-riscv64:${VERSION} \
-		-t ghcr.io/gotify/server-riscv64:$(shell echo $(VERSION) | cut -d '.' -f -2) \
-		-t ghcr.io/gotify/server-riscv64:$(shell echo $(VERSION) | cut -d '.' -f -1) \
+		-t $(DOCKER_HUB_REPO)/server:latest \
+		-t $(DOCKER_HUB_REPO)/server:${VERSION} \
+		-t $(DOCKER_HUB_REPO)/server:$(shell echo $(VERSION) | cut -d '.' -f -2) \
+		-t $(DOCKER_HUB_REPO)/server:$(shell echo $(VERSION) | cut -d '.' -f -1) \
+	    -t $(DOCKER_REPO)/server:latest \
+		-t $(DOCKER_REPO)/server:${VERSION} \
+		-t $(DOCKER_REPO)/server:$(shell echo $(VERSION) | cut -d '.' -f -2) \
+		-t $(DOCKER_REPO)/server:$(shell echo $(VERSION) | cut -d '.' -f -1) \
+		-t $(DOCKER_HUB_REPO)/server-arm64:latest \
+		-t $(DOCKER_HUB_REPO)/server-arm64:${VERSION} \
+		-t $(DOCKER_HUB_REPO)/server-arm64:$(shell echo $(VERSION) | cut -d '.' -f -2) \
+		-t $(DOCKER_HUB_REPO)/server-arm64:$(shell echo $(VERSION) | cut -d '.' -f -1) \
+		-t $(DOCKER_REPO)/server-arm64:latest \
+		-t $(DOCKER_REPO)/server-arm64:${VERSION} \
+		-t $(DOCKER_REPO)/server-arm64:$(shell echo $(VERSION) | cut -d '.' -f -2) \
+		-t $(DOCKER_REPO)/server-arm64:$(shell echo $(VERSION) | cut -d '.' -f -1) \
+		-t $(DOCKER_HUB_REPO)/server-arm7:latest \
+		-t $(DOCKER_HUB_REPO)/server-arm7:${VERSION} \
+		-t $(DOCKER_HUB_REPO)/server-arm7:$(shell echo $(VERSION) | cut -d '.' -f -2) \
+		-t $(DOCKER_HUB_REPO)/server-arm7:$(shell echo $(VERSION) | cut -d '.' -f -1) \
+		-t $(DOCKER_REPO)/server-arm7:latest \
+		-t $(DOCKER_REPO)/server-arm7:${VERSION} \
+		-t $(DOCKER_REPO)/server-arm7:$(shell echo $(VERSION) | cut -d '.' -f -2) \
+		-t $(DOCKER_REPO)/server-arm7:$(shell echo $(VERSION) | cut -d '.' -f -1) \
+		-t $(DOCKER_HUB_REPO)/server-riscv64:latest \
+		-t $(DOCKER_HUB_REPO)/server-riscv64:${VERSION} \
+		-t $(DOCKER_HUB_REPO)/server-riscv64:$(shell echo $(VERSION) | cut -d '.' -f -2) \
+		-t $(DOCKER_HUB_REPO)/server-riscv64:$(shell echo $(VERSION) | cut -d '.' -f -1) \
+		-t $(DOCKER_REPO)/server-riscv64:latest \
+		-t $(DOCKER_REPO)/server-riscv64:${VERSION} \
+		-t $(DOCKER_REPO)/server-riscv64:$(shell echo $(VERSION) | cut -d '.' -f -2) \
+		-t $(DOCKER_REPO)/server-riscv64:$(shell echo $(VERSION) | cut -d '.' -f -1) \
 		--build-arg RUN_TESTS=$(DOCKER_TEST_LEVEL) \
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg LD_FLAGS="$$LD_FLAGS" \
@@ -113,8 +115,8 @@ build-docker-multiarch-master:
 		--label org.opencontainers.image.revision=$(shell git rev-parse HEAD) \
 		--label org.opencontainers.image.version=master-$(shell git rev-parse --short HEAD) \
 		--label org.opencontainers.image.created=$(shell date -u +%Y-%m-%dT%H:%M:%SZ) \
-		-t gotify/server:master \
-		-t ghcr.io/gotify/server:master \
+		-t $(DOCKER_HUB_REPO)/server:master \
+		-t $(DOCKER_REPO)/server:master \
 		--build-arg RUN_TESTS=$(DOCKER_TEST_LEVEL) \
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg LD_FLAGS="-w -s -X main.Version=master-$(shell git rev-parse --short HEAD) -X main.BuildDate=$(shell date "+%F-%T") -X main.Commit=$(shell git rev-parse --verify HEAD) -X main.Mode=prod" \
@@ -122,6 +124,17 @@ build-docker-multiarch-master:
 		-f docker/Dockerfile .
 
 build-docker: build-docker-multiarch
+
+# build-docker-local — Build a Docker image for the current architecture only.
+# Useful for local development and testing.
+build-docker-local:
+	docker buildx build --load \
+		-t $(DOCKER_HUB_REPO)/server:local \
+		--build-arg GO_VERSION=$(GO_VERSION) \
+		--build-arg BUILD_JS=1 \
+		--build-arg RUN_TESTS=$(DOCKER_TEST_LEVEL) \
+		--build-arg LD_FLAGS="$$LD_FLAGS" \
+		-f docker/Dockerfile .
 
 _build_within_docker: OUTPUT = gotify-app
 _build_within_docker:
@@ -153,4 +166,4 @@ build-windows-386:
 
 build: build-linux-arm-7 build-linux-amd64 build-linux-386 build-linux-arm64 build-linux-riscv64 build-windows-amd64 build-windows-386
 
-.PHONY: test-coverage test check-go check-js verify-swagger check download-tools update-swagger package-zip build-docker build-js build
+.PHONY: test-coverage test check-go check-js verify-swagger check download-tools update-swagger package-zip build-docker build-docker-local build-js build
