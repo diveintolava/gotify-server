@@ -31,7 +31,7 @@ func (c *Plugin) PluginInfo() compat.Info {
 
 // NewPluginInstance implements loader.PluginCompat
 func (c *Plugin) NewPluginInstance(ctx compat.UserContext) compat.PluginInstance {
-	inst := PluginInstance{UserCtx: ctx, capabilities: compat.Capabilities{compat.Configurer, compat.Storager, compat.Messenger, compat.Displayer}}
+	inst := PluginInstance{UserCtx: ctx, capabilities: compat.Capabilities{compat.Configurer, compat.Storager, compat.Messenger, compat.Displayer, compat.Filterer}}
 	c.Instances = append(c.Instances, inst)
 	return &inst
 }
@@ -51,6 +51,7 @@ type PluginInstance struct {
 	messageHandler compat.MessageHandler
 	capabilities   compat.Capabilities
 	BasePath       string
+	filterFunc     func(compat.FilterMessage) bool
 }
 
 // PluginConfig is a mock plugin config struct
@@ -173,4 +174,17 @@ func (c *PluginInstance) TriggerMessage() {
 			"test::string": "test",
 		},
 	})
+}
+
+// FilterMessage implements compat.PluginInstance
+func (c *PluginInstance) FilterMessage(msg compat.FilterMessage) bool {
+	if c.filterFunc != nil {
+		return c.filterFunc(msg)
+	}
+	return true
+}
+
+// SetFilterFunc allows tests to configure a filter function
+func (c *PluginInstance) SetFilterFunc(f func(compat.FilterMessage) bool) {
+	c.filterFunc = f
 }

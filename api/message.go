@@ -33,10 +33,16 @@ type Notifier interface {
 	Notify(userID uint, message *model.MessageExternal)
 }
 
+// MessageFilterer filters messages before they are stored.
+type MessageFilterer interface {
+	FilterMessage(userID uint, msg model.MessageExternal) bool
+}
+
 // The MessageAPI provides handlers for managing messages.
 type MessageAPI struct {
 	DB       MessageDatabase
 	Notifier Notifier
+	Filterer MessageFilterer
 }
 
 type pagingParams struct {
@@ -393,6 +399,12 @@ func (a *MessageAPI) CreateMessage(ctx *gin.Context) {
 	}
 
 	msgInternal := toInternalMessage(&message)
+	// Check if any filter plugin wants to hide this message. If so,
+	// skip storage and notification but still return 200.
+	if a.Filterer != nil && !a.Filterer.FilterMessage(auth.GetUserID(ctx), *toExternalMessage(msgInternal)) {
+		ctx.JSON(200, struct{}{})
+		return
+	}
 	if success := successOrAbort(ctx, 500, a.DB.CreateMessage(msgInternal)); !success {
 		return
 	}

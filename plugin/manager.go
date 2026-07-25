@@ -49,6 +49,7 @@ type Manager struct {
 	instances map[uint]compat.PluginInstance
 	plugins   map[string]compat.Plugin
 	messages  chan MessageWithUserID
+	filterers map[uint][]compat.PluginInstance
 	db        Database
 	mux       *gin.RouterGroup
 }
@@ -60,6 +61,7 @@ func NewManager(db Database, directory string, mux *gin.RouterGroup, notifier No
 		instances: map[uint]compat.PluginInstance{},
 		plugins:   map[string]compat.Plugin{},
 		messages:  make(chan MessageWithUserID),
+		filterers: map[uint][]compat.PluginInstance{},
 		db:        db,
 		mux:       mux,
 	}
@@ -67,6 +69,9 @@ func NewManager(db Database, directory string, mux *gin.RouterGroup, notifier No
 	go func() {
 		for {
 			message := <-manager.messages
+			if !manager.FilterMessage(message.UserID, message.Message) {
+				continue
+			}
 			internalMsg := &model.Message{
 				ApplicationID: message.Message.ApplicationID,
 				Title:         message.Message.Title,
@@ -134,6 +139,16 @@ func (m *Manager) SetPluginEnabled(pluginID uint, enabled bool) error {
 		conf = newConf
 	}
 	conf.Enabled = enabled
+
+	// Sync filterer registration with enable/disable state.
+	if compat.HasSupport(instance, compat.Filterer) {
+		if enabled {
+			m.addFilterer(conf.UserID, instance)
+		} else {
+			m.removeFilterer(conf.UserID, instance)
+		}
+	}
+
 	return m.db.UpdatePluginConf(conf)
 }
 
@@ -170,6 +185,28 @@ func (m *Manager) HasInstance(pluginID uint) bool {
 	return err == nil && instance != nil
 }
 
+// FilterMessage checks whether a message should be shown given the user's
+// filter plugins. Returns true if the message should be shown, false if any
+// filter plugin wants to hide it.
+func (m *Manager) FilterMessage(userID uint, msg model.MessageExternal) bool {
+	m.mutex.RLock()
+	defer m.mutex.RUnlock()
+
+	filterers := m.filterers[userID]
+	for _, f := range filterers {
+		if !f.FilterMessage(compat.FilterMessage{
+			Message:       msg.Message,
+			Title:         msg.Title,
+			Priority:      *msg.Priority,
+			Extras:        msg.Extras,
+			ApplicationID: msg.ApplicationID,
+		}) {
+			return false
+		}
+	}
+	return true
+}
+
 // RemoveUser disabled all plugins of a user when the user is disabled.
 func (m *Manager) RemoveUser(userID uint) error {
 	for _, p := range m.plugins {
@@ -196,6 +233,9 @@ func (m *Manager) RemoveUser(userID uint) error {
 		delete(m.instances, pluginConf.ID)
 		m.mutex.Unlock()
 	}
+	m.mutex.Lock()
+	delete(m.filterers, userID)
+	m.mutex.Unlock()
 	return nil
 }
 
@@ -356,6 +396,11 @@ func (m *Manager) initializeSingleUserPlugin(userCtx compat.UserContext, p compa
 		g := m.mux.Group(pluginConf.Token+"/", requirePluginEnabled(id, m.db))
 		instance.RegisterWebhook(strings.Replace(g.BasePath(), ":id", strconv.Itoa(int(id)), 1), g)
 	}
+	if compat.HasSupport(instance, compat.Filterer) {
+		if pluginConf.Enabled {
+			m.addFilterer(userID, instance)
+		}
+	}
 	if pluginConf.Enabled {
 		err := instance.Enable()
 		if err != nil {
@@ -442,4 +487,28 @@ func (m *Manager) createInternalApplication(info compat.Info, userID uint) (*mod
 		return nil, err
 	}
 	return app, nil
+}
+
+// addFilterer registers a filterer plugin instance for a user.
+// Must be called with m.mutex held.
+func (m *Manager) addFilterer(userID uint, instance compat.PluginInstance) {
+	// Avoid duplicate registration.
+	for _, existing := range m.filterers[userID] {
+		if existing == instance {
+			return
+		}
+	}
+	m.filterers[userID] = append(m.filterers[userID], instance)
+}
+
+// removeFilterer unregisters a filterer plugin instance for a user.
+// Must be called with m.mutex held.
+func (m *Manager) removeFilterer(userID uint, instance compat.PluginInstance) {
+	filterers := m.filterers[userID]
+	for i, existing := range filterers {
+		if existing == instance {
+			m.filterers[userID] = append(filterers[:i], filterers[i+1:]...)
+			return
+		}
+	}
 }

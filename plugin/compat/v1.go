@@ -63,6 +63,10 @@ func (c PluginV1) NewPluginInstance(ctx UserContext) PluginInstance {
 		compat.webhooker = webhooker
 	}
 
+	if filterer, ok := instance.(MessageFilterer); ok {
+		compat.filterer = filterer
+	}
+
 	return compat
 }
 
@@ -74,6 +78,7 @@ type PluginV1Instance struct {
 	storager   papiv1.Storager
 	webhooker  papiv1.Webhooker
 	displayer  papiv1.Displayer
+	filterer   MessageFilterer
 }
 
 // DefaultConfig see papiv1.Configurer.
@@ -121,6 +126,14 @@ func (c *PluginV1Instance) SetStorageHandler(handler StorageHandler) {
 	}
 }
 
+// FilterMessage see compat.MessageFilterer.
+func (c *PluginV1Instance) FilterMessage(msg FilterMessage) bool {
+	if c.filterer != nil {
+		return c.filterer.ShouldShow(msg)
+	}
+	return true // no filterer, show everything
+}
+
 // Supports returns a slice of capabilities the plugin instance provides.
 func (c *PluginV1Instance) Supports() Capabilities {
 	modules := Capabilities{}
@@ -138,6 +151,9 @@ func (c *PluginV1Instance) Supports() Capabilities {
 	}
 	if c.webhooker != nil {
 		modules = append(modules, Webhooker)
+	}
+	if c.filterer != nil {
+		modules = append(modules, Filterer)
 	}
 	return modules
 }

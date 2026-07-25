@@ -21,6 +21,8 @@ const (
 	Webhooker = Capability("webhooker")
 	// Displayer displays instructions.
 	Displayer = Capability("displayer")
+	// Filterer filters messages from being stored and delivered.
+	Filterer = Capability("filterer")
 )
 
 // PluginInstance is an encapsulation layer of plugin instances of different backends.
@@ -44,6 +46,9 @@ type PluginInstance interface {
 
 	// SetStorageHandler see Storager#SetStorageHandler.
 	SetStorageHandler(handler StorageHandler)
+
+	// FilterMessage see Filterer#FilterMessage.
+	FilterMessage(msg FilterMessage) bool
 
 	// Returns the supported modules, f.ex. storager
 	Supports() Capabilities
@@ -84,4 +89,22 @@ type Message struct {
 	Title    string
 	Priority int
 	Extras   map[string]any
+}
+
+// FilterMessage describes a message to be inspected by a filter plugin.
+// It is separate from Message so that ApplicationID can be exposed.
+type FilterMessage struct {
+	Message       string
+	Title         string
+	Priority      int
+	Extras        map[string]any
+	ApplicationID uint
+}
+
+// MessageFilterer is implemented by plugins that can filter (hide) messages
+// before they are stored or delivered.
+type MessageFilterer interface {
+	// ShouldShow is called for each incoming message. Return true to show
+	// the message (store and deliver), false to hide it (discard silently).
+	ShouldShow(msg FilterMessage) bool
 }
