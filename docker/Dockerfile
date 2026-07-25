@@ -50,7 +50,8 @@ RUN cd /src/gotify && \
     if [ "$RUN_TESTS" = "1" ] && [ "$BUILDPLATFORM" = "$TARGETPLATFORM" ]; then \
     go test -v ./...; \
     fi && \
-    LD_FLAGS=${LD_FLAGS} make OUTPUT=/target/app/gotify-app _build_within_docker
+    LD_FLAGS=${LD_FLAGS} make OUTPUT=/target/app/gotify-app _build_within_docker && \
+    go build -buildmode=plugin -o /target/app/data/plugins/filter.so ./plugin/example/filter/
 
 FROM debian:${DEBIAN}
 
