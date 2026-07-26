@@ -40,6 +40,7 @@ jobs:
           export LD_FLAGS="-w -s -X main.Version=$VERSION -X main.BuildDate=$(date "+%F-%T") -X main.Commit=$(git rev-parse --verify HEAD) -X main.Mode=prod"
           echo "LD_FLAGS=$LD_FLAGS" >> $GITHUB_ENV
           echo "DOCKER_REPO=ghcr.io/${{ github.repository_owner }}" >> $GITHUB_ENV
+          echo "DOCKER_IMAGE=${{ github.event.repository.name }}" >> $GITHUB_ENV
 
           make build
           sudo chown -R $UID build
@@ -68,10 +69,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          make DOCKER_BUILD_PUSH=true DOCKER_REPO=ghcr.io/${{ github.repository_owner }} build-docker
+          make DOCKER_BUILD_PUSH=true DOCKER_REPO=ghcr.io/${{ github.repository_owner }} DOCKER_IMAGE=${{ github.event.repository.name }} build-docker
       - if: startsWith(github.ref, 'refs/heads/master')
         run: |
-          make DOCKER_BUILD_PUSH=true DOCKER_REPO=ghcr.io/${{ github.repository_owner }} build-docker-multiarch-master
+          make DOCKER_BUILD_PUSH=true DOCKER_REPO=ghcr.io/${{ github.repository_owner }} DOCKER_IMAGE=${{ github.event.repository.name }} build-docker-multiarch-master
       - if: startsWith(github.ref, 'refs/tags/v')
         uses: svenstaro/upload-release-action@v2
         with:

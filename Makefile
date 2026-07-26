@@ -10,26 +10,27 @@ DOCKER_GO_BUILD=go build -mod=readonly -a -installsuffix cgo -ldflags "$$LD_FLAG
 DOCKER_TEST_LEVEL ?= 0 # Optionally run a test during docker build
 DOCKER_REPO ?= ghcr.io/gotify
 DOCKER_HUB_REPO ?= gotify
+DOCKER_IMAGE ?= gotify-server
 
 # Docker Hub tag sets — overridable for forks that don't have Docker Hub access.
 DOCKER_HUB_TAGS_MULTIARCH ?= \
-	-t $(DOCKER_HUB_REPO)/server:latest \
-	-t $(DOCKER_HUB_REPO)/server:${VERSION} \
-	-t $(DOCKER_HUB_REPO)/server:$(shell echo $(VERSION) | cut -d '.' -f -2) \
-	-t $(DOCKER_HUB_REPO)/server:$(shell echo $(VERSION) | cut -d '.' -f -1) \
-	-t $(DOCKER_HUB_REPO)/server-arm64:latest \
-	-t $(DOCKER_HUB_REPO)/server-arm64:${VERSION} \
-	-t $(DOCKER_HUB_REPO)/server-arm64:$(shell echo $(VERSION) | cut -d '.' -f -2) \
-	-t $(DOCKER_HUB_REPO)/server-arm64:$(shell echo $(VERSION) | cut -d '.' -f -1) \
-	-t $(DOCKER_HUB_REPO)/server-arm7:latest \
-	-t $(DOCKER_HUB_REPO)/server-arm7:${VERSION} \
-	-t $(DOCKER_HUB_REPO)/server-arm7:$(shell echo $(VERSION) | cut -d '.' -f -2) \
-	-t $(DOCKER_HUB_REPO)/server-arm7:$(shell echo $(VERSION) | cut -d '.' -f -1) \
-	-t $(DOCKER_HUB_REPO)/server-riscv64:latest \
-	-t $(DOCKER_HUB_REPO)/server-riscv64:${VERSION} \
-	-t $(DOCKER_HUB_REPO)/server-riscv64:$(shell echo $(VERSION) | cut -d '.' -f -2) \
-	-t $(DOCKER_HUB_REPO)/server-riscv64:$(shell echo $(VERSION) | cut -d '.' -f -1)
-DOCKER_HUB_TAGS_MASTER ?= -t $(DOCKER_HUB_REPO)/server:master
+	-t $(DOCKER_HUB_REPO)/${DOCKER_IMAGE}:latest \
+	-t $(DOCKER_HUB_REPO)/${DOCKER_IMAGE}:${VERSION} \
+	-t $(DOCKER_HUB_REPO)/${DOCKER_IMAGE}:$(shell echo $(VERSION) | cut -d '.' -f -2) \
+	-t $(DOCKER_HUB_REPO)/${DOCKER_IMAGE}:$(shell echo $(VERSION) | cut -d '.' -f -1) \
+	-t $(DOCKER_HUB_REPO)/${DOCKER_IMAGE}-arm64:latest \
+	-t $(DOCKER_HUB_REPO)/${DOCKER_IMAGE}-arm64:${VERSION} \
+	-t $(DOCKER_HUB_REPO)/${DOCKER_IMAGE}-arm64:$(shell echo $(VERSION) | cut -d '.' -f -2) \
+	-t $(DOCKER_HUB_REPO)/${DOCKER_IMAGE}-arm64:$(shell echo $(VERSION) | cut -d '.' -f -1) \
+	-t $(DOCKER_HUB_REPO)/${DOCKER_IMAGE}-arm7:latest \
+	-t $(DOCKER_HUB_REPO)/${DOCKER_IMAGE}-arm7:${VERSION} \
+	-t $(DOCKER_HUB_REPO)/${DOCKER_IMAGE}-arm7:$(shell echo $(VERSION) | cut -d '.' -f -2) \
+	-t $(DOCKER_HUB_REPO)/${DOCKER_IMAGE}-arm7:$(shell echo $(VERSION) | cut -d '.' -f -1) \
+	-t $(DOCKER_HUB_REPO)/${DOCKER_IMAGE}-riscv64:latest \
+	-t $(DOCKER_HUB_REPO)/${DOCKER_IMAGE}-riscv64:${VERSION} \
+	-t $(DOCKER_HUB_REPO)/${DOCKER_IMAGE}-riscv64:$(shell echo $(VERSION) | cut -d '.' -f -2) \
+	-t $(DOCKER_HUB_REPO)/${DOCKER_IMAGE}-riscv64:$(shell echo $(VERSION) | cut -d '.' -f -1)
+DOCKER_HUB_TAGS_MASTER ?= -t $(DOCKER_HUB_REPO)/${DOCKER_IMAGE}:master
 
 test: test-coverage test-js
 check: check-go check-swagger check-js
@@ -92,22 +93,22 @@ build-docker-multiarch: require-version
 		--label org.opencontainers.image.version=$(VERSION) \
 		--label org.opencontainers.image.created=$(shell date -u +%Y-%m-%dT%H:%M:%SZ) \
 		$(DOCKER_HUB_TAGS_MULTIARCH) \
-		-t $(DOCKER_REPO)/server:latest \
-		-t $(DOCKER_REPO)/server:${VERSION} \
-		-t $(DOCKER_REPO)/server:$(shell echo $(VERSION) | cut -d '.' -f -2) \
-		-t $(DOCKER_REPO)/server:$(shell echo $(VERSION) | cut -d '.' -f -1) \
-		-t $(DOCKER_REPO)/server-arm64:latest \
-		-t $(DOCKER_REPO)/server-arm64:${VERSION} \
-		-t $(DOCKER_REPO)/server-arm64:$(shell echo $(VERSION) | cut -d '.' -f -2) \
-		-t $(DOCKER_REPO)/server-arm64:$(shell echo $(VERSION) | cut -d '.' -f -1) \
-		-t $(DOCKER_REPO)/server-arm7:latest \
-		-t $(DOCKER_REPO)/server-arm7:${VERSION} \
-		-t $(DOCKER_REPO)/server-arm7:$(shell echo $(VERSION) | cut -d '.' -f -2) \
-		-t $(DOCKER_REPO)/server-arm7:$(shell echo $(VERSION) | cut -d '.' -f -1) \
-		-t $(DOCKER_REPO)/server-riscv64:latest \
-		-t $(DOCKER_REPO)/server-riscv64:${VERSION} \
-		-t $(DOCKER_REPO)/server-riscv64:$(shell echo $(VERSION) | cut -d '.' -f -2) \
-		-t $(DOCKER_REPO)/server-riscv64:$(shell echo $(VERSION) | cut -d '.' -f -1) \
+		-t $(DOCKER_REPO)/${DOCKER_IMAGE}:latest \
+		-t $(DOCKER_REPO)/${DOCKER_IMAGE}:${VERSION} \
+		-t $(DOCKER_REPO)/${DOCKER_IMAGE}:$(shell echo $(VERSION) | cut -d '.' -f -2) \
+		-t $(DOCKER_REPO)/${DOCKER_IMAGE}:$(shell echo $(VERSION) | cut -d '.' -f -1) \
+		-t $(DOCKER_REPO)/${DOCKER_IMAGE}-arm64:latest \
+		-t $(DOCKER_REPO)/${DOCKER_IMAGE}-arm64:${VERSION} \
+		-t $(DOCKER_REPO)/${DOCKER_IMAGE}-arm64:$(shell echo $(VERSION) | cut -d '.' -f -2) \
+		-t $(DOCKER_REPO)/${DOCKER_IMAGE}-arm64:$(shell echo $(VERSION) | cut -d '.' -f -1) \
+		-t $(DOCKER_REPO)/${DOCKER_IMAGE}-arm7:latest \
+		-t $(DOCKER_REPO)/${DOCKER_IMAGE}-arm7:${VERSION} \
+		-t $(DOCKER_REPO)/${DOCKER_IMAGE}-arm7:$(shell echo $(VERSION) | cut -d '.' -f -2) \
+		-t $(DOCKER_REPO)/${DOCKER_IMAGE}-arm7:$(shell echo $(VERSION) | cut -d '.' -f -1) \
+		-t $(DOCKER_REPO)/${DOCKER_IMAGE}-riscv64:latest \
+		-t $(DOCKER_REPO)/${DOCKER_IMAGE}-riscv64:${VERSION} \
+		-t $(DOCKER_REPO)/${DOCKER_IMAGE}-riscv64:$(shell echo $(VERSION) | cut -d '.' -f -2) \
+		-t $(DOCKER_REPO)/${DOCKER_IMAGE}-riscv64:$(shell echo $(VERSION) | cut -d '.' -f -1) \
 		--build-arg RUN_TESTS=$(DOCKER_TEST_LEVEL) \
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg LD_FLAGS="$$LD_FLAGS" \
@@ -121,7 +122,7 @@ build-docker-multiarch-master:
 		--label org.opencontainers.image.version=master-$(shell git rev-parse --short HEAD) \
 		--label org.opencontainers.image.created=$(shell date -u +%Y-%m-%dT%H:%M:%SZ) \
 		$(DOCKER_HUB_TAGS_MASTER) \
-		-t $(DOCKER_REPO)/server:master \
+		-t $(DOCKER_REPO)/${DOCKER_IMAGE}:master \
 		--build-arg RUN_TESTS=$(DOCKER_TEST_LEVEL) \
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg LD_FLAGS="-w -s -X main.Version=master-$(shell git rev-parse --short HEAD) -X main.BuildDate=$(shell date "+%F-%T") -X main.Commit=$(shell git rev-parse --verify HEAD) -X main.Mode=prod" \
@@ -134,7 +135,7 @@ build-docker: build-docker-multiarch
 # Useful for local development and testing.
 build-docker-local:
 	docker buildx build --load \
-		-t $(DOCKER_HUB_REPO)/server:local \
+		-t $(DOCKER_HUB_REPO)/${DOCKER_IMAGE}:local \
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg BUILD_JS=1 \
 		--build-arg RUN_TESTS=$(DOCKER_TEST_LEVEL) \
