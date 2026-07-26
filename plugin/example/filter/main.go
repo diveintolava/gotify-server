@@ -20,8 +20,7 @@ func GetGotifyPluginInfo() plugin.Info {
 
 // Plugin is the gotify plugin instance.
 type Plugin struct {
-	msgHandler plugin.MessageHandler
-	config     *Config
+	config *Config
 }
 
 // FilterRule defines a single filter rule. All non-empty/non-nil fields within
@@ -55,11 +54,6 @@ func (c *Plugin) DefaultConfig() any {
 func (c *Plugin) ValidateAndSetConfig(config any) error {
 	c.config = config.(*Config)
 	return nil
-}
-
-// SetMessageHandler implements plugin.Messenger.
-func (c *Plugin) SetMessageHandler(h plugin.MessageHandler) {
-	c.msgHandler = h
 }
 
 // Enable enables the plugin.

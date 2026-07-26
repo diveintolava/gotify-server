@@ -31,8 +31,9 @@ FROM --platform=${BUILDPLATFORM} gotify/build:${GO_VERSION}-${__TARGETPLATFORM_G
 ARG BUILDPLATFORM
 ARG TARGETPLATFORM
 ARG BUILD_JS=0
-ARG RUN_TESTS=0 # 0=never, 1=native only
+ARG RUN_TESTS=0 # 0=never, 1=native only 
 ARG LD_FLAGS=""
+ENV GOPROXY=https://goproxy.cn,direct
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -yq --no-install-recommends \
@@ -51,7 +52,7 @@ RUN cd /src/gotify && \
     go test -v ./...; \
     fi && \
     LD_FLAGS=${LD_FLAGS} make OUTPUT=/target/app/gotify-app _build_within_docker && \
-    go build -buildmode=plugin -o /target/app/data/plugins/filter.so ./plugin/example/filter/
+    go build -buildmode=plugin -o /target/app/plugins/filter.so ./plugin/example/filter/
 
 FROM debian:${DEBIAN}
 
@@ -61,6 +62,10 @@ LABEL org.opencontainers.image.source=https://github.com/gotify/server
 # Build-time configurables
 ARG GOTIFY_SERVER_EXPOSE=80
 ENV GOTIFY_SERVER_PORT=$GOTIFY_SERVER_EXPOSE
+
+# Plugins are shipped in a dedicated directory separate from persistent data.
+ENV GOTIFY_PLUGINSDIR=/app/plugins
+
 
 WORKDIR /app
 
